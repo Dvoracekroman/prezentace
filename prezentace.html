@@ -1,0 +1,933 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Plachetky CZ — návrh servisu pekařských plachetek</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#f4efe2; --card:#fffdf6; --ink:#241d12; --ink-soft:#6a6151;
+    --crust:#7a3f1d; --crust-deep:#582c12; --crust-soft:#ece1d2;
+    --wheat:#c2912f; --terra:#bd5f2c; --sage:#5d7c4c;
+    --risk:#b53122; --line:#ddd4bf; --line-soft:#ebe4d2;
+    --shadow:0 1px 2px rgba(36,29,18,.05),0 10px 30px -12px rgba(36,29,18,.20);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{background:var(--paper);color:var(--ink);font-family:'IBM Plex Sans',sans-serif;-webkit-font-smoothing:antialiased}
+  body{padding:0 0 60px}
+  h1,h2,h3,.disp{font-family:'Fraunces',serif}
+  .num{font-variant-numeric:tabular-nums}
+
+  header{background:var(--crust);color:#f4efe2;padding:30px 34px 26px;
+    background-image:radial-gradient(circle at 88% -10%,rgba(194,145,47,.34),transparent 46%);
+    border-bottom:3px solid var(--wheat)}
+  .brand{display:flex;align-items:center;gap:10px;margin-bottom:9px}
+  .logo{width:34px;height:34px;border-radius:8px;background:var(--wheat);display:flex;
+    align-items:center;justify-content:center;flex:none;cursor:default;user-select:none}
+  .logo svg{width:21px;height:21px;pointer-events:none}
+  .brand .bn{font-family:'Fraunces',serif;font-size:16px;font-weight:600;color:#fff;line-height:1}
+  .brand .bs{font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:#d6b98a}
+  header h1{font-size:32px;font-weight:600;line-height:1.12;margin:6px 0 6px;max-width:780px}
+  header p{color:#dcc9b0;font-size:14.5px;max-width:660px}
+  .toolbar{display:flex;gap:10px;margin-top:18px;flex-wrap:wrap}
+  .toolbar button{font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;
+    background:#f4efe2;color:var(--crust-deep);border:none;border-radius:7px;padding:9px 16px;
+    transition:transform .12s,box-shadow .12s}
+  .toolbar button:hover{transform:translateY(-1px);box-shadow:0 6px 16px -6px rgba(0,0,0,.4)}
+  .toolbar button.ghost{background:transparent;color:#e3d2bb;box-shadow:inset 0 0 0 1.5px rgba(227,210,187,.4)}
+
+  .wrap{display:grid;grid-template-columns:368px 1fr;gap:26px;padding:26px 34px;max-width:1340px;margin:0 auto;align-items:start}
+  @media(max-width:990px){.wrap{grid-template-columns:1fr;padding:20px}}
+
+  .panel{background:var(--card);border:1px solid var(--line);border-radius:14px;
+    box-shadow:var(--shadow);position:sticky;top:18px}
+  @media(max-width:990px){.panel{position:static}}
+  .panel-head{padding:16px 20px 12px;border-bottom:1px solid var(--line-soft)}
+  .panel-head .t{font-size:13px;font-weight:700;letter-spacing:.03em}
+  .panel-head .s{font-size:11.5px;color:var(--ink-soft);margin-top:2px}
+  .grp{border-bottom:1px solid var(--line-soft)}
+  .grp:last-child{border-bottom:none}
+  .grp-h{display:flex;align-items:center;gap:9px;padding:13px 20px 9px;font-size:11px;font-weight:700;
+    letter-spacing:.12em;text-transform:uppercase;color:var(--crust)}
+  .grp-h .dot{width:7px;height:7px;border-radius:2px;background:var(--terra);flex:none}
+  .grp-body{padding:2px 20px 14px}
+  .field{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:7px 0}
+  .field label{font-size:13px;color:var(--ink);flex:1}
+  .field .unit{font-size:11px;color:var(--ink-soft);font-weight:500}
+  .field input[type=number]{width:96px;font-family:inherit;font-size:13.5px;font-weight:600;text-align:right;
+    border:1px solid var(--line);border-radius:7px;padding:6px 9px;background:#fcfbf3;color:var(--ink);
+    font-variant-numeric:tabular-nums}
+  .field input[type=number]:focus{outline:none;border-color:var(--crust);background:#fff}
+  .slider-field{padding:9px 0 5px}
+  .slider-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px}
+  .slider-top label{font-size:13px}
+  .slider-val{font-family:'Fraunces',serif;font-size:18px;font-weight:600;color:var(--crust)}
+  .slider-val small{font-size:11px;color:var(--ink-soft);font-weight:500;font-family:'IBM Plex Sans'}
+  input[type=range]{-webkit-appearance:none;width:100%;height:5px;border-radius:4px;
+    background:linear-gradient(var(--crust),var(--crust));background-repeat:no-repeat;
+    background-color:var(--line);cursor:pointer}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:17px;height:17px;border-radius:50%;
+    background:var(--terra);border:3px solid #fffdf6;box-shadow:0 1px 4px rgba(0,0,0,.3)}
+  input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;background:var(--terra);
+    border:3px solid #fffdf6;box-shadow:0 1px 4px rgba(0,0,0,.3)}
+  .readout{display:flex;justify-content:space-between;align-items:center;background:var(--crust-soft);
+    border-radius:7px;padding:7px 11px;margin:6px 0 2px}
+  .readout span{font-size:12px;font-weight:600;color:var(--crust-deep)}
+  .readout b{font-family:'Fraunces',serif;font-size:15px;color:var(--crust-deep)}
+  .panel-note{padding:12px 20px 16px;font-size:11px;color:var(--ink-soft);line-height:1.5}
+
+  .results{display:flex;flex-direction:column;gap:22px}
+  .stripwrap{background:var(--crust-deep);border-radius:13px;padding:4px;box-shadow:var(--shadow)}
+  .strip{display:grid;grid-template-columns:repeat(4,1fr)}
+  .strip .cell{padding:15px 16px;color:#e6d8c4}
+  .strip .cell+.cell{border-left:1px solid rgba(255,255,255,.09)}
+  .strip .lab{font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:#bd9d76;font-weight:600}
+  .strip .v{font-family:'Fraunces',serif;font-size:25px;font-weight:600;color:#fff;margin-top:3px;line-height:1}
+  .strip .v small{font-size:12px;color:#cdb693;font-weight:500;font-family:'IBM Plex Sans'}
+
+  .breadband{background:var(--card);border:1px solid var(--line);border-radius:13px;box-shadow:var(--shadow);overflow:hidden}
+  .bb-head{background:var(--wheat);padding:11px 18px;display:flex;align-items:center;gap:9px}
+  .bb-head .ic{width:20px;height:20px;flex:none}
+  .bb-head .ht{font-family:'Fraunces',serif;font-size:15px;font-weight:600;color:#3a2705}
+  .bb-head .hs{font-size:11.5px;color:#5e4410;margin-left:auto;font-weight:500}
+  .bb-grid{display:grid;grid-template-columns:repeat(3,1fr)}
+  .bb-cell{padding:16px 18px;text-align:center}
+  .bb-cell+.bb-cell{border-left:1px solid var(--line-soft)}
+  .bb-cell.feat{background:var(--crust-soft)}
+  .bb-cell .bn{font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-soft)}
+  .bb-cell .bv{font-family:'Fraunces',serif;font-size:33px;font-weight:600;color:var(--crust-deep);line-height:1.05;margin:4px 0 1px}
+  .bb-cell .bsub{font-size:11.5px;color:var(--ink-soft)}
+  @media(max-width:620px){.bb-grid{grid-template-columns:1fr}.bb-cell+.bb-cell{border-left:none;border-top:1px solid var(--line-soft)}}
+
+  .sec-title{display:flex;align-items:baseline;gap:11px;margin-bottom:-4px}
+  .sec-title h2{font-size:22px;font-weight:600}
+  .sec-title .ln{flex:1;height:1px;background:var(--line)}
+  .sec-title .tag{font-size:11px;color:var(--ink-soft)}
+
+  .cards{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+  @media(max-width:780px){.cards{grid-template-columns:1fr}}
+  .mcard{background:var(--card);border:1px solid var(--line);border-radius:13px;overflow:hidden;
+    box-shadow:var(--shadow);display:flex;flex-direction:column}
+  .mcard.feature{border-color:var(--crust);box-shadow:0 0 0 1px var(--crust),var(--shadow)}
+  .mc-head{padding:14px 16px 13px;position:relative}
+  .mcard.feature .mc-head{background:var(--crust);color:#fff}
+  .mcard:not(.feature) .mc-head{background:#efe7d6}
+  .mc-head .mname{font-size:14.5px;font-weight:700;font-family:'Fraunces',serif}
+  .mc-head .mdesc{font-size:11px;margin-top:2px;opacity:.85;line-height:1.35}
+  .rank{position:absolute;top:12px;right:13px;font-size:10px;font-weight:700;letter-spacing:.05em;
+    padding:3px 8px;border-radius:20px;text-transform:uppercase}
+  .rank.r1{background:var(--wheat);color:#3a2705}
+  .mcard:not(.feature) .rank.r2,.mcard:not(.feature) .rank.r3{background:#ded5c0;color:var(--ink-soft)}
+  .rank.r2,.rank.r3{background:rgba(0,0,0,.13);color:inherit}
+  .mc-body{padding:15px 16px 16px;display:flex;flex-direction:column;gap:13px;flex:1}
+  .bignum{font-family:'Fraunces',serif;font-size:29px;font-weight:600;line-height:1;color:var(--crust-deep)}
+  .bignum small{display:block;font-size:11px;color:var(--ink-soft);font-weight:500;
+    font-family:'IBM Plex Sans';letter-spacing:.02em;margin-bottom:3px}
+  .perbread{font-size:12.5px;color:var(--ink-soft)}
+  .perbread b{color:var(--terra);font-weight:700;font-size:15px;font-family:'Fraunces',serif}
+  .chips{display:flex;gap:7px;flex-wrap:wrap}
+  .chip{font-size:10.5px;font-weight:600;padding:4px 9px;border-radius:6px;background:#efe7d6;color:var(--ink-soft)}
+  .chip.warn{background:#f4e3d3;color:#8a4a23}
+  .chip.ok{background:#e3eddb;color:var(--sage)}
+  .chip.risk{background:#f3dad6;color:var(--risk)}
+  .bd{border-top:1px solid var(--line-soft);padding-top:11px;display:flex;flex-direction:column;gap:7px}
+  .bd-row{font-size:11.5px}
+  .bd-row .rh{display:flex;justify-content:space-between;margin-bottom:3px}
+  .bd-row .rh .rl{color:var(--ink-soft)}
+  .bd-row .rh .rv{font-weight:600;font-variant-numeric:tabular-nums}
+  .bar{height:5px;border-radius:3px;background:#ece4d2;overflow:hidden}
+  .bar i{display:block;height:100%;border-radius:3px}
+
+  .compare{background:var(--card);border:1px solid var(--line);border-radius:13px;box-shadow:var(--shadow);padding:18px 20px}
+  .cmp-row{display:grid;grid-template-columns:220px 1fr 134px;gap:14px;align-items:center;padding:9px 0}
+  .cmp-row+.cmp-row{border-top:1px solid var(--line-soft)}
+  .cmp-name{font-size:13px;font-weight:600}
+  .cmp-name small{display:block;font-size:11px;color:var(--ink-soft);font-weight:400}
+  .cmp-bar{height:26px;background:#ece4d2;border-radius:6px;overflow:hidden}
+  .cmp-bar i{display:block;height:100%;border-radius:6px;transition:width .35s ease}
+  .cmp-val{text-align:right;font-family:'Fraunces',serif;font-size:17px;font-weight:600;font-variant-numeric:tabular-nums}
+  @media(max-width:620px){.cmp-row{grid-template-columns:1fr;gap:5px}.cmp-val{text-align:left}}
+
+  .hygiene{background:var(--card);border:1px solid var(--line);border-radius:13px;box-shadow:var(--shadow);
+    padding:18px 20px;display:grid;grid-template-columns:300px 1fr;gap:22px;align-items:center}
+  @media(max-width:760px){.hygiene{grid-template-columns:1fr}}
+  .gauge svg{width:100%;height:auto;display:block}
+  .hyg-txt h3{font-size:18px;font-weight:600;margin-bottom:5px}
+  .hyg-txt .hlvl{font-family:'Fraunces',serif;font-size:21px;font-weight:600;margin-bottom:6px}
+  .hyg-txt p{font-size:12.5px;line-height:1.6;color:var(--ink-soft)}
+  .hyg-txt p b{color:var(--crust-deep)}
+  .hyg-flag{margin-top:10px;font-size:12px;font-weight:600;padding:8px 12px;border-radius:8px}
+  .hyg-flag.ok{background:#e3eddb;color:var(--sage)}
+  .hyg-flag.risk{background:#f3dad6;color:var(--risk)}
+
+  .tradeoff{background:var(--card);border:1px solid var(--line);border-radius:13px;box-shadow:var(--shadow);padding:18px 20px}
+  .tradeoff .to-chart svg{width:100%;height:auto;display:block}
+  .to-legend{display:flex;gap:16px;flex-wrap:wrap;font-size:11.5px;color:var(--ink-soft);margin-top:6px}
+  .to-legend span{display:flex;align-items:center;gap:6px}
+  .to-legend i{width:15px;height:3px;border-radius:2px;display:inline-block}
+  .to-legend i.sw{height:11px;width:11px;border-radius:3px}
+
+  .longterm{background:var(--card);border:1px solid var(--line);border-radius:13px;box-shadow:var(--shadow);padding:18px 20px}
+  .hsel{display:flex;gap:7px;margin-bottom:16px;flex-wrap:wrap}
+  .hbtn{font-family:inherit;font-size:12.5px;font-weight:600;cursor:pointer;border:1.5px solid var(--line);
+    background:#fcfbf3;color:var(--ink-soft);border-radius:8px;padding:7px 13px;transition:all .12s}
+  .hbtn:hover{border-color:var(--crust);color:var(--crust)}
+  .hbtn.on{background:var(--crust);color:#fff;border-color:var(--crust)}
+  .lt-grid{display:grid;grid-template-columns:1.5fr 1fr;gap:18px;align-items:start}
+  @media(max-width:760px){.lt-grid{grid-template-columns:1fr}}
+  .lt-chart svg{width:100%;height:auto;display:block}
+  .lt-legend{display:flex;gap:14px;flex-wrap:wrap;margin-top:4px;font-size:11.5px;color:var(--ink-soft)}
+  .lt-legend span{display:flex;align-items:center;gap:6px}
+  .lt-legend i{width:15px;height:3px;border-radius:2px;display:inline-block}
+  .lt-cards{display:flex;flex-direction:column;gap:9px}
+  .ltc{border:1px solid var(--line-soft);border-radius:9px;padding:10px 13px;display:flex;
+    justify-content:space-between;align-items:center;gap:10px}
+  .ltc.best{border-color:var(--crust);background:var(--crust-soft)}
+  .ltc .ln2{font-size:12.5px;font-weight:600}
+  .ltc .ln2 small{display:block;font-size:10.5px;color:var(--ink-soft);font-weight:400}
+  .ltc .lv{font-family:'Fraunces',serif;font-size:17px;font-weight:600;text-align:right;white-space:nowrap}
+  .ltc .lv small{display:block;font-size:10px;color:var(--ink-soft);font-family:'IBM Plex Sans';font-weight:500}
+  .payback{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}
+  @media(max-width:620px){.payback{grid-template-columns:1fr}}
+  .pb{border:1px solid var(--line-soft);border-left:3px solid var(--terra);border-radius:9px;padding:12px 14px;background:#faf6ec}
+  .pb .pt{font-size:11px;font-weight:700;letter-spacing:.04em;color:var(--ink-soft);text-transform:uppercase}
+  .pb .pv{font-family:'Fraunces',serif;font-size:23px;font-weight:600;color:var(--crust-deep);margin:3px 0}
+  .pb .ps{font-size:11.5px;color:var(--ink-soft);line-height:1.5}
+  .lt-note{margin-top:14px;font-size:12px;line-height:1.6;color:var(--ink-soft);
+    border-top:1px solid var(--line-soft);padding-top:11px}
+  .lt-note b{color:var(--crust-deep)}
+
+  .verdict{background:var(--crust);color:#f0e6d8;border-radius:13px;padding:20px 22px;box-shadow:var(--shadow);
+    background-image:radial-gradient(circle at 100% 0%,rgba(194,145,47,.27),transparent 50%)}
+  .verdict h3{font-size:18px;font-weight:600;color:#fff;margin-bottom:7px}
+  .verdict p{font-size:13.5px;line-height:1.6;color:#dcc9b0}
+  .verdict p b{color:var(--wheat)}
+  .vgrid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px}
+  @media(max-width:620px){.vgrid{grid-template-columns:1fr}}
+  .vbox{background:rgba(255,255,255,.07);border-radius:9px;padding:12px 14px}
+  .vbox .vt{font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:#bd9d76;font-weight:700}
+  .vbox .vv{font-family:'Fraunces',serif;font-size:21px;font-weight:600;color:#fff;margin-top:3px}
+  .vbox .vs{font-size:11.5px;color:#dcc9b0;margin-top:2px}
+
+  .foot{font-size:11px;color:var(--ink-soft);line-height:1.55;padding:0 4px}
+  .foot b{color:var(--ink)}
+
+  /* ---- owner modal (hidden) ---- */
+  .ov{position:fixed;inset:0;background:rgba(36,29,18,.62);display:none;z-index:50;
+    align-items:flex-start;justify-content:center;padding:40px 16px;overflow:auto}
+  .ov.show{display:flex}
+  .modal{background:var(--card);border-radius:14px;max-width:560px;width:100%;
+    box-shadow:0 30px 80px -20px rgba(0,0,0,.6);overflow:hidden}
+  .modal-head{background:var(--crust-deep);color:#fff;padding:16px 20px;display:flex;
+    justify-content:space-between;align-items:center}
+  .modal-head .mt{font-family:'Fraunces',serif;font-size:16px;font-weight:600}
+  .modal-head .mx{background:rgba(255,255,255,.15);border:none;color:#fff;width:28px;height:28px;
+    border-radius:7px;cursor:pointer;font-size:16px;line-height:1}
+  .modal-body{padding:18px 20px;max-height:70vh;overflow:auto}
+  .pinrow{display:flex;gap:9px;margin-top:6px}
+  .pinrow input{flex:1;font-family:inherit;font-size:15px;font-weight:600;text-align:center;
+    letter-spacing:.3em;border:1.5px solid var(--line);border-radius:8px;padding:9px;background:#fcfbf3}
+  .pinrow input:focus{outline:none;border-color:var(--crust)}
+  .pinrow button,.btn-main{font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;
+    border:none;border-radius:8px;padding:9px 18px;background:var(--crust);color:#fff;white-space:nowrap}
+  .pinrow button:hover,.btn-main:hover{background:var(--crust-deep)}
+  .pinmsg{font-size:12px;color:var(--risk);margin-top:8px;min-height:15px;font-weight:600}
+  .modal p.lead{font-size:12.5px;color:var(--ink-soft);line-height:1.55;margin-bottom:6px}
+  .imp-area{width:100%;font-family:'IBM Plex Sans',monospace;font-size:11px;font-weight:600;
+    border:1.5px solid var(--line);border-radius:8px;padding:9px;background:#fcfbf3;
+    resize:none;min-height:54px;word-break:break-all;margin:6px 0 8px}
+  .imp-area:focus{outline:none;border-color:var(--crust)}
+  .imp-msg{font-size:12px;font-weight:600;margin:6px 0;min-height:15px}
+  .imp-msg.ok{color:var(--sage)} .imp-msg.err{color:var(--risk)}
+  .owner-grp{margin-top:14px}
+  .owner-grp h4{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+    color:var(--crust);margin-bottom:5px;border-bottom:1px solid var(--line-soft);padding-bottom:4px}
+  .of{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:5px 0}
+  .of label{font-size:12.5px;flex:1}
+  .of .unit{font-size:10.5px;color:var(--ink-soft)}
+  .of input{width:96px;font-family:inherit;font-size:12.5px;font-weight:600;text-align:right;
+    border:1px solid var(--line);border-radius:6px;padding:5px 8px;background:#fcfbf3;
+    font-variant-numeric:tabular-nums}
+  .of input:focus{outline:none;border-color:var(--crust)}
+  table.ocat{width:100%;border-collapse:collapse;font-size:10.5px;margin-top:5px}
+  table.ocat th{font-size:9px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.03em;
+    padding:4px 3px;text-align:right;border-bottom:1px solid var(--line)}
+  table.ocat th:first-child{text-align:left}
+  table.ocat td{padding:3px 2px;border-bottom:1px solid var(--line-soft)}
+  table.ocat td:first-child{font-size:10.5px}
+  table.ocat input{width:100%;font-family:inherit;font-size:10.5px;font-weight:600;text-align:right;
+    border:1px solid var(--line-soft);border-radius:5px;padding:3px 4px;background:#fcfbf3}
+  .modal-foot{padding:13px 20px;border-top:1px solid var(--line-soft);display:flex;
+    justify-content:space-between;align-items:center;gap:10px}
+  .modal-foot .hint{font-size:11px;color:var(--ink-soft)}
+
+  @media print{
+    .panel,.toolbar,.ov{display:none!important}
+    .wrap{grid-template-columns:1fr;padding:14px}
+    body{background:#fff}
+    header{background:var(--crust)!important}
+    *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <span class="logo" id="logo" title=""><svg viewBox="0 0 24 24" fill="none"><path d="M4 14c0-3 2-5 8-5s8 2 8 5-3 5-8 5-8-2-8-5Z" fill="#5c2e12"/><path d="M9 9c0-2 1-4 3-4s3 2 3 4" stroke="#5c2e12" stroke-width="1.6" stroke-linecap="round"/><path d="M8 14h8M9.5 17h5" stroke="#c2912f" stroke-width="1.4" stroke-linecap="round"/></svg></span>
+    <div><div class="bn">Plachetky CZ</div><div class="bs">výrobce a servis pekařských plachetek</div></div>
+  </div>
+  <h1>Návrh servisu plachetek pro vaši pekárnu</h1>
+  <p>Zadejte provoz vaší pekárny a interval svozu. Uvidíte náklad na jeden bochník a porovnání tří variant spolupráce. Ceny jsou bez DPH.</p>
+  <div class="toolbar">
+    <button onclick="window.print()">Vytisknout / uložit PDF</button>
+    <button class="ghost" onclick="resetClient()">Obnovit hodnoty</button>
+  </div>
+</header>
+
+<div class="wrap">
+  <aside class="panel">
+    <div class="panel-head">
+      <div class="t">Údaje o vaší pekárně</div>
+      <div class="s">Zadejte svůj provoz — výpočet se okamžitě přepočítá.</div>
+    </div>
+    <div id="groups"></div>
+    <div class="panel-note">Náklady servisu, životnost plachetek i finanční podmínky jsou přednastaveny podle nabídky Plachetky CZ.</div>
+  </aside>
+
+  <main class="results">
+    <div class="stripwrap"><div class="strip" id="strip"></div></div>
+
+    <div class="breadband">
+      <div class="bb-head">
+        <svg class="ic" viewBox="0 0 24 24" fill="none"><path d="M3 13c0-3 2-5 9-5s9 2 9 5-3 5-9 5-9-2-9-5Z" fill="#fff" opacity=".9"/><path d="M7 13h10" stroke="#7a3f1d" stroke-width="1.5" stroke-linecap="round"/></svg>
+        <span class="ht">Náklad na jeden chléb</span>
+        <span class="hs">klíčové číslo · vč. servisu i opotřebení plachetky</span>
+      </div>
+      <div class="bb-grid" id="breadGrid"></div>
+    </div>
+
+    <div class="sec-title"><h2>Tři varianty pro vaši pekárnu</h2><div class="ln"></div><div class="tag">roční náklad</div></div>
+    <div class="cards" id="cards"></div>
+
+    <div class="sec-title"><h2>Porovnání ročních nákladů</h2><div class="ln"></div></div>
+    <div class="compare" id="compare"></div>
+
+    <div class="sec-title"><h2>Hygiena — riziko plísňových sporů</h2><div class="ln"></div><div class="tag">podle intervalu svozu</div></div>
+    <div class="hygiene" id="hygiene"></div>
+
+    <div class="sec-title"><h2>Interval svozu — cena vs. riziko</h2><div class="ln"></div><div class="tag">kde je optimum</div></div>
+    <div class="tradeoff">
+      <div class="to-chart" id="tochart"></div>
+      <div class="to-legend">
+        <span><i style="background:#7a3f1d"></i>Náklad na chléb (Pronájem + servis)</span>
+        <span><i class="sw" style="background:#e3eddb"></i>nízké riziko</span>
+        <span><i class="sw" style="background:#f4e3d3"></i>zvýšené</span>
+        <span><i class="sw" style="background:#f3dad6"></i>vysoké riziko plísní</span>
+      </div>
+    </div>
+
+    <div class="sec-title"><h2>Časový horizont a návratnost</h2><div class="ln"></div><div class="tag">od 1 dne po 20 let</div></div>
+    <div class="longterm">
+      <div class="hsel" id="hsel"></div>
+      <div class="lt-grid">
+        <div>
+          <div class="lt-chart" id="ltchart"></div>
+          <div class="lt-legend">
+            <span><i style="background:#7a3f1d"></i>Pronájem + servis</span>
+            <span><i style="background:#c2912f"></i>Pouze servis</span>
+            <span><i style="background:#bd5f2c"></i>Vlastní údržba</span>
+          </div>
+        </div>
+        <div class="lt-cards" id="ltcards"></div>
+      </div>
+      <div class="payback" id="payback"></div>
+      <div class="lt-note" id="ltnote"></div>
+    </div>
+
+    <div class="verdict" id="verdict"></div>
+
+    <div class="foot">
+      <b>Jak se výpočet provádí:</b> Roční počet bochníků = počet plachetek × otáčky za den × provozní dny × pečiva na otáčku. Servisní cyklus = jedno praní s impregnací. Praní s impregnací snižuje lepivost plachetky a smývá zbytky těsta a mouky — čím déle plachetka jede bez servisu, tím vyšší je riziko plísňových sporů. Náklad na chléb = celkový roční náklad ÷ roční počet bochníků.
+    </div>
+  </main>
+</div>
+
+<!-- ========== HIDDEN OWNER MODAL ========== -->
+<div class="ov" id="ownerOv">
+  <div class="modal">
+    <div class="modal-head">
+      <span class="mt" id="modalTitle">Nastavení — Plachetky CZ</span>
+      <button class="mx" onclick="closeOwner()">✕</button>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+    <div class="modal-foot">
+      <span class="hint" id="modalHint">Přístup pouze pro Plachetky CZ.</span>
+      <button class="btn-main" id="modalAction" onclick="closeOwner()">Hotovo</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ===================== OWNER PARAMETERS (hidden) ===================== */
+const OWNER = {
+  doporInterval:5, sPrani:4, sImpregnace:3.5, sKontrola:1, sEnergie:1.5,
+  logistika:350, rezie:1.5, vlastniUdrzba:16, investVlastni:60000,
+  podil:80, doba:4, urokD:8.5, urokH:9, marze:20, prirazka:35, ztraty:12,
+  sprava:6000, dan:21, zivotFaktor:100, vynos:4, residual:40
+};
+const CAT0 = [
+ {name:'Plachetka na ošatku kulatá',  count:160, price:110, weight:130, life:60, breads:1},
+ {name:'Plachetka na ošatku oválná',  count:110, price:130, weight:150, life:60, breads:1},
+ {name:'Plachetka couche na bagety',  count:30,  price:260, weight:320, life:70, breads:5},
+];
+let CAT = JSON.parse(JSON.stringify(CAT0));
+const OWNER_PIN = '2468';   // přístupový kód do nastavení
+
+/* ===================== CLIENT INPUTS ===================== */
+const CLIENT_FIELDS = [
+ {grp:'Provoz pekárny', items:[
+   {id:'plachetky', label:'Plachetek v oběhu', type:'slider', min:50, max:2000, step:10, val:300, unit:'ks'},
+   {id:'hodiny',    label:'Hodin v provozu / den', type:'num', val:16, unit:'h'},
+   {id:'smena',     label:'Délka jedné směny', type:'num', val:8, unit:'h'},
+   {id:'dobaKynuti',label:'Doba kynutí v ošatce', type:'slider', min:1, max:48, step:1, val:4, unit:'h'},
+   {id:'ro_otackyDen',   label:'⟳ Otáček plachetky za den', type:'readout'},
+   {id:'ro_otackySmena', label:'⟳ Otáček za směnu', type:'readout'},
+   {id:'dnyTyden',  label:'Provozních dní v týdnu', type:'num', val:6, unit:'dní'},
+ ]},
+ {grp:'Návrh servisu', items:[
+   {id:'interval', label:'Interval svozu', type:'slider', min:1, max:8, step:1, val:4, unit:'týdnů'},
+ ]},
+];
+const CLIENT_KEYS=['plachetky','hodiny','smena','dobaKynuti','dnyTyden','interval'];
+
+/* ===================== OWNER MODAL FIELDS ===================== */
+const OWNER_FIELDS=[
+ {grp:'Servis a údržba', items:[
+   ['sPrani','Praní a sušení','Kč/ks'],['sImpregnace','Impregnace','Kč/ks'],
+   ['sKontrola','Kontrola a třídění','Kč/ks'],['sEnergie','Energie a voda','Kč/ks'],
+   ['logistika','Logistika svozu','Kč/svoz'],['rezie','Režie na plachetku','Kč/ks'],
+   ['doporInterval','Doporučený max. interval','týdnů'],
+ ]},
+ {grp:'Vlastní údržba (Model C)', items:[
+   ['vlastniUdrzba','Náklad vlastní údržby','Kč/ks'],['investVlastni','Investice do praní','Kč'],
+ ]},
+ {grp:'Financování a marže', items:[
+   ['podil','Podíl financování úvěrem','%'],['doba','Doba splácení úvěru','let'],
+   ['urokD','Úrok — Plachetky CZ','% p.a.'],['urokH','Úrok — pekárna','% p.a.'],
+   ['marze','Marže na servisu','%'],['prirazka','Přirážka za pronájem','%'],
+   ['ztraty','Přirážka na ztráty','%'],['sprava','Správa plachetek','Kč/rok'],
+   ['dan','Daň z příjmů','%'],
+ ]},
+ {grp:'Dlouhodobé parametry', items:[
+   ['zivotFaktor','Životnost plachetky (faktor)','%'],['vynos','Výnosnost kapitálu','% p.a.'],
+   ['residual','Zůstatková hodnota','%'],
+ ]},
+];
+
+/* ===================== HELPERS ===================== */
+const $=id=>document.getElementById(id);
+const v=id=>{const e=$(id);return e?parseFloat(e.value)||0:0;};
+const P=k=>CLIENT_KEYS.includes(k)?v(k):(OWNER[k]||0);
+const czk=n=>Math.round(n).toLocaleString('cs-CZ')+' Kč';
+const czk1=n=>n.toLocaleString('cs-CZ',{minimumFractionDigits:1,maximumFractionDigits:1})+' Kč';
+const num=n=>Math.round(n).toLocaleString('cs-CZ');
+const hal=n=>(n*100).toLocaleString('cs-CZ',{minimumFractionDigits:1,maximumFractionDigits:1})+' hal.';
+const kc3=n=>n.toLocaleString('cs-CZ',{minimumFractionDigits:3,maximumFractionDigits:3})+' Kč';
+function loan(Pp,ratePct,years){
+  const r=ratePct/100/12,n=years*12;
+  let pay=r===0?Pp/n:Pp*r/(1-Math.pow(1+r,-n));
+  const ti=pay*n-Pp;
+  return {pay,totalInt:ti,avgYear:years>0?ti/years:0};
+}
+
+/* ===================== BUILD CLIENT PANEL ===================== */
+function buildPanel(){
+  const root=$('groups'); root.innerHTML='';
+  CLIENT_FIELDS.forEach(g=>{
+    const gd=document.createElement('div'); gd.className='grp';
+    gd.innerHTML=`<div class="grp-h"><span class="dot"></span>${g.grp}</div>`;
+    const body=document.createElement('div'); body.className='grp-body';
+    g.items.forEach(f=>{
+      if(f.type==='slider'){
+        const d=document.createElement('div'); d.className='slider-field';
+        d.innerHTML=`<div class="slider-top"><label>${f.label}</label>
+          <span class="slider-val"><span id="lbl_${f.id}">${f.val}</span> <small>${f.unit}</small></span></div>
+          <input type="range" id="${f.id}" min="${f.min}" max="${f.max}" step="${f.step}" value="${f.val}">`;
+        body.appendChild(d);
+      } else if(f.type==='num'){
+        const d=document.createElement('div'); d.className='field';
+        d.innerHTML=`<label>${f.label}</label><input type="number" id="${f.id}" value="${f.val}" step="any">
+          <span class="unit">${f.unit}</span>`;
+        body.appendChild(d);
+      } else if(f.type==='readout'){
+        const d=document.createElement('div'); d.className='readout';
+        d.innerHTML=`<span>${f.label}</span><b id="${f.id}">–</b>`;
+        body.appendChild(d);
+      }
+    });
+    gd.appendChild(body); root.appendChild(gd);
+  });
+  root.querySelectorAll('input').forEach(inp=>{
+    inp.addEventListener('input',()=>{
+      if(inp.type==='range'){const l=$('lbl_'+inp.id);if(l)l.textContent=inp.value;
+        const p=(inp.value-inp.min)/(inp.max-inp.min)*100;inp.style.backgroundSize=p+'% 100%';}
+      calc();
+    });
+  });
+  root.querySelectorAll('input[type=range]').forEach(inp=>{
+    const p=(inp.value-inp.min)/(inp.max-inp.min)*100; inp.style.backgroundSize=p+'% 100%';
+  });
+}
+function resetClient(){
+  CLIENT_FIELDS.forEach(g=>g.items.forEach(f=>{if(f.val!==undefined&&$(f.id))$(f.id).value=f.val;}));
+  buildPanel(); calc();
+}
+
+/* ===================== CALC ===================== */
+function calc(){
+  const cloths0=P('plachetky'), dnyTyden=P('dnyTyden');
+  const dobaKynuti=P('dobaKynuti');
+  const otacky = dobaKynuti>0 ? P('hodiny')/dobaKynuti : 0;       // otáček za den
+  const otackySmena = dobaKynuti>0 ? P('smena')/dobaKynuti : 0;   // otáček za směnu
+  const opDaysYear=dnyTyden*52, intervalW=P('interval'), lifeF=P('zivotFaktor')/100;
+  const cyc = intervalW>0 ? 52/intervalW : 52;
+  const trips = cyc;
+
+  if($('ro_otackyDen'))   $('ro_otackyDen').textContent   = otacky.toLocaleString('cs-CZ',{maximumFractionDigits:1})+'×';
+  if($('ro_otackySmena')) $('ro_otackySmena').textContent = otackySmena.toLocaleString('cs-CZ',{maximumFractionDigits:1})+'×';
+
+  let catCount=0; CAT.forEach(it=>catCount+=it.count);
+  const scale = catCount>0 ? cloths0/catCount : 1;
+  let totalCloths=0, clothValue=0, annualBreads=0, dep=0, kgYear=0;
+  CAT.forEach(it=>{
+    const cnt=it.count*scale, effLife=it.life*lifeF;
+    totalCloths += cnt;
+    clothValue  += cnt*it.price;
+    annualBreads+= cnt*otacky*opDaysYear*it.breads;
+    dep         += effLife>0 ? cnt*it.price*cyc/effLife : 0;
+    kgYear      += cnt*cyc*it.weight/1000;
+  });
+
+  const servis = P('sPrani')+P('sImpregnace')+P('sKontrola')+P('sEnergie');
+  const servisFull = servis + P('rezie');
+  const providerOp = totalCloths*cyc*servisFull + trips*P('logistika');
+
+  const principal = clothValue*P('podil')/100;
+  const equity    = clothValue - principal;
+  const lD = loan(principal, P('urokD'), P('doba'));
+  const lH = loan(principal, P('urokH'), P('doba'));
+
+  const marze=P('marze')/100, prir=P('prirazka')/100, ztr=P('ztraty')/100, dan=P('dan')/100;
+  const servicePrice = providerOp*(1+marze);
+  const lossAllow = dep*ztr;
+  const admin = P('sprava');
+
+  const m1cloth = (dep+lossAllow+lD.avgYear)*(1+prir);
+  const M1 = {
+    key:'pronajem', name:'Pronájem + servis',
+    desc:'Pekárna jen používá. Plachetky vlastní, financuje, pere i impregnuje Plachetky CZ.',
+    annual: servicePrice+m1cloth, invest:0, loan:0, feature:true, risk:0,
+    bd:[['Servis plachetek',servicePrice,'var(--crust)'],
+        ['Pronájem plachetek (kapitál + riziko)',m1cloth,'var(--terra)']]
+  };
+  const M2 = {
+    key:'servis', name:'Pouze servis',
+    desc:'Pekárna si plachetky koupí, Plachetky CZ je pere a impregnuje.',
+    annual: servicePrice+dep+lossAllow+lH.avgYear+admin, invest:equity, loan:principal, feature:false, risk:0,
+    bd:[['Servis plachetek',servicePrice,'var(--crust)'],
+        ['Odpis vlastních plachetek',dep,'var(--wheat)'],
+        ['Ztráty a poškození',lossAllow,'#a59a82'],
+        ['Úroky úvěru pekárny',lH.avgYear,'var(--terra)'],
+        ['Správa plachetek',admin,'#cbbf9f']]
+  };
+  const ownOp = totalCloths*cyc*P('vlastniUdrzba');
+  const M3 = {
+    key:'vlastni', name:'Vlastní údržba',
+    desc:'Pekárna si plachetky pere a impregnuje sama ve vlastní režii.',
+    annual: ownOp+dep+lossAllow+lH.avgYear+admin, invest:equity, loan:principal, feature:false, risk:1,
+    bd:[['Vlastní praní a impregnace',ownOp,'var(--crust)'],
+        ['Odpis vlastních plachetek',dep,'var(--wheat)'],
+        ['Ztráty a poškození',lossAllow,'#a59a82'],
+        ['Úroky úvěru pekárny',lH.avgYear,'var(--terra)'],
+        ['Správa plachetek',admin,'#cbbf9f']]
+  };
+  const models=[M1,M2,M3];
+  models.forEach(m=>m.perBread = annualBreads>0 ? m.annual/annualBreads : 0);
+  const sorted=[...models].sort((a,b)=>a.annual-b.annual);
+  models.forEach(m=>m.rank=sorted.indexOf(m)+1);
+
+  const riskBase = Math.min(100, Math.pow(intervalW/8,1.25)*100);
+
+  const cpbByInterval = w=>{
+    const c=52/w;
+    const op = totalCloths*c*servisFull + c*P('logistika');
+    const sp = op*(1+marze);
+    let depW=0; CAT.forEach(it=>{const cnt=it.count*scale, el=it.life*lifeF;
+      depW += el>0 ? cnt*it.price*c/el : 0;});
+    const rental=(depW+depW*ztr+lD.avgYear)*(1+prir);
+    return annualBreads>0 ? (sp+rental)/annualBreads : 0;
+  };
+
+  const resPct=P('residual')/100, yieldR=P('vynos')/100, investV=P('investVlastni');
+  const annualFee=M1.annual;
+  const run2=servicePrice+dep+lossAllow+admin;
+  const run3=ownOp+dep+lossAllow+admin;
+  const upfront2=clothValue*(1-resPct)+lH.totalInt;
+  const upfront3=clothValue*(1-resPct)+investV+lH.totalInt;
+  const opp2=clothValue*yieldR, opp3=(clothValue+investV)*yieldR;
+  const eff2=run2+opp2, eff3=run3+opp3;
+  const cumF={m1:y=>annualFee*y, m2:y=>upfront2+eff2*y, m3:y=>upfront3+eff3*y};
+  const sav2=annualFee-eff2, sav3=annualFee-eff3;
+  const pay2=sav2>0?upfront2/sav2:null, pay3=sav3>0?upfront3/sav3:null;
+
+  render({totalCloths,clothValue,annualBreads,dep,cyc,intervalW,models,
+          riskBase,cpbByInterval,
+          lt:{cumF,annualFee,upfront2,upfront3,eff2,eff3,sav2,sav3,pay2,pay3,investV,resPct,yieldR}});
+}
+
+/* ===================== RENDER ===================== */
+function render(d){
+  $('strip').innerHTML=`
+    ${stripCell('Plachetek v oběhu',num(d.totalCloths)+' ks','vč. rezervy')}
+    ${stripCell('Pečiva za rok',num(d.annualBreads),'bochníků')}
+    ${stripCell('Servisních cyklů',num(d.cyc*d.totalCloths),'praní + impregnací / rok')}
+    ${stripCell('Hodnota plachetek',czk(d.clothValue),'pořizovací, bez DPH')}`;
+
+  $('breadGrid').innerHTML=d.models.map(m=>`
+    <div class="bb-cell ${m.feature?'feat':''}">
+      <div class="bn">${m.name}</div>
+      <div class="bv">${hal(m.perBread)}</div>
+      <div class="bsub">${kc3(m.perBread)} na chléb · ${czk(m.annual)}/rok</div>
+    </div>`).join('');
+
+  $('cards').innerHTML=d.models.map(m=>{
+    const tot=m.bd.reduce((s,x)=>s+x[1],0);
+    const bd=m.bd.map(x=>`
+      <div class="bd-row">
+        <div class="rh"><span class="rl">${x[0]}</span><span class="rv num">${czk(x[1])}</span></div>
+        <div class="bar"><i style="width:${tot>0?x[1]/tot*100:0}%;background:${x[2]}"></i></div>
+      </div>`).join('');
+    let chips = m.invest===0
+      ? `<span class="chip ok">Bez investice</span><span class="chip ok">Bez úvěru</span>`
+      : `<span class="chip warn">Investice ${czk(m.invest)}</span><span class="chip warn">Úvěr ${czk(m.loan)}</span>`;
+    chips += m.risk
+      ? `<span class="chip risk">Vyšší hygien. riziko</span>`
+      : `<span class="chip ok">Řízená impregnace</span>`;
+    const rl=m.rank===1?'Nejnižší náklad':(m.rank===2?'2. místo':'3. místo');
+    return `<div class="mcard ${m.feature?'feature':''}">
+      <div class="mc-head">
+        <span class="rank r${m.rank}">${rl}</span>
+        <div class="mname">${m.name}</div>
+        <div class="mdesc">${m.desc}</div>
+      </div>
+      <div class="mc-body">
+        <div class="bignum"><small>ROČNÍ NÁKLAD PEKÁRNY</small>${czk(m.annual)}</div>
+        <div class="perbread">Náklad na jeden chléb &nbsp;<b>${hal(m.perBread)}</b></div>
+        <div class="chips">${chips}</div>
+        <div class="bd">${bd}</div>
+      </div></div>`;
+  }).join('');
+
+  const maxA=Math.max(...d.models.map(m=>m.annual));
+  const col={pronajem:'var(--crust)',servis:'var(--wheat)',vlastni:'var(--terra)'};
+  $('compare').innerHTML=d.models.map(m=>`
+    <div class="cmp-row">
+      <div class="cmp-name">${m.name}<small>${m.invest===0?'bez investice a úvěru':'investice '+czk(m.invest)}</small></div>
+      <div class="cmp-bar"><i style="width:${maxA>0?m.annual/maxA*100:0}%;background:${col[m.key]}"></i></div>
+      <div class="cmp-val">${czk(m.annual)}</div>
+    </div>`).join('');
+
+  renderHygiene(d);
+  $('tochart').innerHTML=buildIntervalChart(d.cpbByInterval,d.intervalW,P('doporInterval'));
+  renderLong(d);
+
+  const cheapest=[...d.models].sort((a,b)=>a.annual-b.annual)[0];
+  const m1=d.models.find(m=>m.key==='pronajem');
+  const diff=m1.annual-cheapest.annual;
+  const diffPct=cheapest.annual>0?diff/cheapest.annual*100:0;
+  const cmpTxt = cheapest.key==='pronajem'
+    ? `Pronájem je v tomto nastavení rovnou <b>nejlevnější variantou</b> — a navíc jediný bez investice, bez úvěru a s řízenou impregnací.`
+    : `Pronájem je oproti nejlevnější variantě (${cheapest.name}) dražší jen o <b>${czk(diff)}</b> ročně, tedy <b>${diffPct.toFixed(1)} %</b>. Za to pekárna získá nulovou investici, žádný úvěr a profesionálně impregnované plachetky bez rizika plísní.`;
+  $('verdict').innerHTML=`
+    <h3>Co z toho plyne pro vaši pekárnu</h3>
+    <p>${cmpTxt} Náklad na jeden chléb se u pronájmu drží na <b>${hal(m1.perBread)}</b> — plachetka tak tvoří jen zlomek ceny bochníku. Pekárna neváže kapitál ${czk(d.clothValue)} do plachetek a o praní ani impregnaci se nestará.</p>
+    <div class="vgrid">
+      <div class="vbox"><div class="vt">Náklad plachetky na 1 chléb</div>
+        <div class="vv">${hal(m1.perBread)}</div>
+        <div class="vs">${kc3(m1.perBread)} · varianta Pronájem</div></div>
+      <div class="vbox"><div class="vt">Pronájem ušetří pekárně na startu</div>
+        <div class="vv">${czk(d.clothValue)}</div>
+        <div class="vs">žádná investice do plachetek + žádný úvěr</div></div>
+    </div>`;
+}
+function stripCell(l,val,s){return `<div class="cell"><div class="lab">${l}</div><div class="v">${val} <small>${s}</small></div></div>`;}
+
+/* ===================== HYGIENE ===================== */
+function riskLevel(p){
+  if(p<25) return {t:'Nízké riziko', c:'var(--sage)'};
+  if(p<50) return {t:'Mírné riziko', c:'var(--wheat)'};
+  if(p<75) return {t:'Zvýšené riziko', c:'var(--terra)'};
+  return {t:'Vysoké riziko', c:'var(--risk)'};
+}
+function renderHygiene(d){
+  const W=d.intervalW, rec=P('doporInterval'), p=d.riskBase, lvl=riskLevel(p);
+  $('hygiene').innerHTML=`
+    <div class="gauge">${buildGauge(p,lvl.c)}</div>
+    <div class="hyg-txt">
+      <h3>Interval svozu ${W} ${W===1?'týden':(W<5?'týdny':'týdnů')}</h3>
+      <div class="hlvl" style="color:${lvl.c}">${lvl.t}</div>
+      <p>Praní s <b>impregnací</b> smývá zbytky těsta a mouky a snižuje lepivost plachetky. Mezi svozy se v textilii drží vlhkost — čím delší interval, tím vyšší je riziko růstu <b>plísňových sporů</b>, které ohrožují kvalitu i hygienu pečiva.</p>
+      ${W<=rec
+        ? `<div class="hyg-flag ok">✓ Interval je v doporučeném pásmu (do ${rec} týdnů). Plachetky jsou hygienicky bezpečné.</div>`
+        : `<div class="hyg-flag risk">⚠ Interval ${W} týdnů překračuje doporučených ${rec} týdnů — riziko plísní výrazně roste. Doporučujeme svoz zkrátit.</div>`}
+    </div>`;
+}
+function polar(cx,cy,r,deg){const a=(deg-90)*Math.PI/180;return[cx+r*Math.cos(a),cy+r*Math.sin(a)];}
+function arc(cx,cy,r,a0,a1){
+  const[x0,y0]=polar(cx,cy,r,a0),[x1,y1]=polar(cx,cy,r,a1);
+  const large=(a1-a0)>180?1:0;
+  return `M ${x0} ${y0} A ${r} ${r} 0 ${large} 1 ${x1} ${y1}`;
+}
+function buildGauge(pct,col){
+  const W=280,H=170,cx=140,cy=150,r=104;
+  const segs=[[0,25,'#5d7c4c'],[25,50,'#c2912f'],[50,75,'#bd5f2c'],[75,100,'#b53122']];
+  let s='';
+  segs.forEach(([a,b,c])=>{
+    s+=`<path d="${arc(cx,cy,r,-90+a/100*180,-90+b/100*180)}" stroke="${c}" stroke-width="17" fill="none"/>`;
+  });
+  const ang=-90+Math.min(100,pct)/100*180;
+  const[nx,ny]=polar(cx,cy,r-26,ang);
+  s+=`<line x1="${cx}" y1="${cy}" x2="${nx}" y2="${ny}" stroke="#241d12" stroke-width="4" stroke-linecap="round"/>`;
+  s+=`<circle cx="${cx}" cy="${cy}" r="8" fill="#241d12"/>`;
+  s+=`<text x="${cx}" y="${cy-30}" text-anchor="middle" font-family="Fraunces,serif" font-size="34" font-weight="600" fill="${col}">${Math.round(pct)}</text>`;
+  s+=`<text x="${cx}" y="${cy-12}" text-anchor="middle" font-size="10" fill="#6a6151">index rizika plísní</text>`;
+  s+=`<text x="30" y="${cy+18}" text-anchor="middle" font-size="9.5" fill="#6a6151">bezpečné</text>`;
+  s+=`<text x="250" y="${cy+18}" text-anchor="middle" font-size="9.5" fill="#6a6151">rizikové</text>`;
+  return `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" font-family="IBM Plex Sans,sans-serif">${s}</svg>`;
+}
+
+/* ===================== INTERVAL TRADE-OFF ===================== */
+function buildIntervalChart(cpbFn,curW,recW){
+  const W=620,H=290,padL=78,padR=20,padT=18,padB=44;
+  const plotW=W-padL-padR,plotH=H-padT-padB,wmin=1,wmax=8;
+  const vals=[];for(let w=wmin;w<=wmax;w++)vals.push(cpbFn(w));
+  const vmax=Math.max(...vals)*1.08;
+  const X=w=>padL+(w-wmin)/(wmax-wmin)*plotW;
+  const Y=c=>padT+plotH-(c/vmax)*plotH;
+  const bands=[[1,2.5,'#e9efe1'],[2.5,4.5,'#eef0e3'],[4.5,6.5,'#f6e9da'],[6.5,8,'#f5ddd8']];
+  let bg='';bands.forEach(([a,b,c])=>{bg+=`<rect x="${X(a)}" y="${padT}" width="${X(b)-X(a)}" height="${plotH}" fill="${c}"/>`;});
+  let g='';
+  for(let i=0;i<=4;i++){
+    const yy=padT+plotH-i/4*plotH, cv=vmax*i/4;
+    g+=`<line x1="${padL}" y1="${yy}" x2="${W-padR}" y2="${yy}" stroke="#ddd4bf" stroke-opacity=".6"/>`;
+    g+=`<text x="${padL-9}" y="${yy+3.5}" text-anchor="end" font-size="10" fill="#6a6151">${(cv*100).toLocaleString('cs-CZ',{maximumFractionDigits:0})} hal.</text>`;
+  }
+  let xl='';
+  for(let w=wmin;w<=wmax;w++) xl+=`<text x="${X(w)}" y="${H-padB+17}" text-anchor="middle" font-size="10" fill="#6a6151">${w}</text>`;
+  xl+=`<text x="${(padL+W-padR)/2}" y="${H-6}" text-anchor="middle" font-size="10" fill="#8a8170">interval svozu (týdnů)</text>`;
+  let pts='';for(let w=wmin;w<=wmax;w++)pts+=X(w)+','+Y(cpbFn(w))+' ';
+  let dots='';for(let w=wmin;w<=wmax;w++)dots+=`<circle cx="${X(w)}" cy="${Y(cpbFn(w))}" r="3" fill="#7a3f1d"/>`;
+  let rec='';
+  if(recW>=wmin&&recW<=wmax){
+    rec=`<line x1="${X(recW)}" y1="${padT}" x2="${X(recW)}" y2="${padT+plotH}" stroke="#5d7c4c" stroke-width="1.5" stroke-dasharray="3 3"/>
+         <text x="${X(recW)}" y="${padT+10}" text-anchor="middle" font-size="9" fill="#5d7c4c" font-weight="600">doporučeno</text>`;
+  }
+  const cx=X(Math.min(Math.max(curW,wmin),wmax));
+  const cur=`<line x1="${cx}" y1="${padT}" x2="${cx}" y2="${padT+plotH}" stroke="#241d12" stroke-width="1.6" stroke-dasharray="4 3" opacity=".55"/>
+       <circle cx="${cx}" cy="${Y(cpbFn(curW))}" r="5.5" fill="#bd5f2c" stroke="#fffdf6" stroke-width="2"/>
+       <text x="${cx}" y="${Y(cpbFn(curW))-11}" text-anchor="middle" font-size="10" font-weight="700" fill="#582c12">${hal(cpbFn(curW))}</text>`;
+  return `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" font-family="IBM Plex Sans,sans-serif">
+    ${bg}${g}${xl}${rec}
+    <polyline points="${pts.trim()}" fill="none" stroke="#7a3f1d" stroke-width="2.6" stroke-linejoin="round"/>
+    ${dots}${cur}</svg>`;
+}
+
+/* ===================== LONG-TERM ===================== */
+const PERIODS=[['1 den',1/365],['1 týden',7/365],['1 měsíc',1/12],['1 rok',1],
+               ['5 let',5],['10 let',10],['15 let',15],['20 let',20]];
+let HORIZON=1, HLABEL='1 rok';
+function setH(val,label){HORIZON=val;HLABEL=label;calc();}
+function renderLong(d){
+  const lt=d.lt;
+  $('hsel').innerHTML=PERIODS.map(([lab,val])=>
+    `<button class="hbtn ${val===HORIZON?'on':''}" onclick="setH(${val},'${lab}')">${lab}</button>`).join('');
+  $('ltchart').innerHTML=buildChart(lt.cumF,HORIZON);
+  const arr=[
+    {name:'Pronájem + servis', val:lt.cumF.m1(HORIZON)},
+    {name:'Pouze servis',      val:lt.cumF.m2(HORIZON)},
+    {name:'Vlastní údržba',    val:lt.cumF.m3(HORIZON)},
+  ];
+  const mn=Math.min(...arr.map(a=>a.val));
+  const breadsP=d.annualBreads*HORIZON;
+  $('ltcards').innerHTML=arr.slice().sort((a,b)=>a.val-b.val).map(a=>`
+    <div class="ltc ${a.val===mn?'best':''}">
+      <div class="ln2">${a.name}<small>na chléb ${breadsP>0?hal(a.val/breadsP):'—'}</small></div>
+      <div class="lv">${czk(a.val)}<small>za ${HLABEL}${a.val===mn?' · nejnižší':' · +'+czk(a.val-mn)}</small></div>
+    </div>`).join('');
+  $('payback').innerHTML=
+    pbBox('Pouze servis',lt.upfront2,lt.sav2,lt.pay2)+
+    pbBox('Vlastní údržba',lt.upfront3,lt.sav3,lt.pay3);
+  const cheap=arr.slice().sort((a,b)=>a.val-b.val)[0].name;
+  const ins = cheap==='Pronájem + servis'
+    ? `Při horizontu <b>${HLABEL}</b> je nejvýhodnější <b>pronájem</b> — bez vstupní investice a bez úvěru.`
+    : `Při horizontu <b>${HLABEL}</b> vychází nejlevněji <b>${cheap}</b>, ovšem jen proto, že pekárna předem vložila vlastní kapitál a nese riziko opotřebení i hygieny.`;
+  $('ltnote').innerHTML=`${ins} Graf ukazuje kumulativní náklad podle počtu let provozu. Výpočet zahrnuje vstupní investici, úroky z úvěru, průběžnou obnovu plachetek podle životnosti, ztráty a poškození, ušlý výnos z vázaného kapitálu (${(lt.yieldR*100).toLocaleString('cs-CZ')} % p.a.) a zůstatkovou hodnotu plachetek ${(lt.resPct*100).toLocaleString('cs-CZ')} %. Ceny jsou v dnešní úrovni, bez inflace.`;
+}
+function pbBox(name,invest,sav,pay){
+  const yw=n=>n<2?'roku':'let';
+  if(pay==null||sav<=0){
+    return `<div class="pb"><div class="pt">Návratnost — ${name}</div>
+      <div class="pv">Nevrací se</div>
+      <div class="ps">Pronájem je levnější i v ročním provozu — vlastní investice ${czk(invest)} se v tomto nastavení nevyplatí.</div></div>`;
+  }
+  return `<div class="pb"><div class="pt">Návratnost — ${name}</div>
+    <div class="pv">${pay.toLocaleString('cs-CZ',{maximumFractionDigits:1})} ${yw(pay)}</div>
+    <div class="ps">Vstupní investice ${czk(invest)} se vrátí roční úsporou ${czk(sav)} oproti pronájmu.</div></div>`;
+}
+function buildChart(cumF,horizon){
+  const W=580,H=300,padL=74,padR=18,padT=16,padB=40;
+  const plotW=W-padL-padR,plotH=H-padT-padB,xmax=20;
+  const maxv=Math.max(cumF.m1(20),cumF.m2(20),cumF.m3(20),1);
+  const step=Math.max(Math.pow(10,Math.floor(Math.log10(maxv)))/2,1);
+  const ymax=Math.ceil(maxv/step)*step;
+  const X=y=>padL+y/xmax*plotW;
+  const Y=c=>padT+plotH-(Math.min(c,ymax)/ymax)*plotH;
+  const fmtC=n=>n>=1e6?(n/1e6).toLocaleString('cs-CZ',{maximumFractionDigits:1})+' mil'
+                      :Math.round(n/1000)+' tis';
+  let g='';
+  for(let i=0;i<=4;i++){
+    const yy=padT+plotH-i/4*plotH;
+    g+=`<line x1="${padL}" y1="${yy}" x2="${W-padR}" y2="${yy}" stroke="#ebe4d2"/>`;
+    g+=`<text x="${padL-9}" y="${yy+3.5}" text-anchor="end" font-size="10" fill="#6a6151">${fmtC(ymax*i/4)}</text>`;
+  }
+  let xl='';
+  [0,5,10,15,20].forEach(t=>{
+    xl+=`<line x1="${X(t)}" y1="${padT}" x2="${X(t)}" y2="${padT+plotH}" stroke="#f1ebda"/>`;
+    xl+=`<text x="${X(t)}" y="${H-padB+17}" text-anchor="middle" font-size="10" fill="#6a6151">${t}</text>`;
+  });
+  xl+=`<text x="${(padL+W-padR)/2}" y="${H-5}" text-anchor="middle" font-size="10" fill="#8a8170">roky provozu</text>`;
+  const line=(fn,col)=>{
+    let pts='';for(let y=0;y<=20;y++)pts+=X(y)+','+Y(fn(y))+' ';
+    return `<polyline points="${pts.trim()}" fill="none" stroke="${col}" stroke-width="2.6" stroke-linejoin="round"/>`;
+  };
+  let mk='';
+  if(horizon>=1){
+    const hx=Math.min(horizon,20),mx=X(hx);
+    mk+=`<line x1="${mx}" y1="${padT}" x2="${mx}" y2="${padT+plotH}" stroke="#241d12" stroke-dasharray="4 3" opacity=".5"/>`;
+    [['m1','#7a3f1d'],['m2','#c2912f'],['m3','#bd5f2c']].forEach(([k,c])=>{
+      mk+=`<circle cx="${mx}" cy="${Y(cumF[k](hx))}" r="4" fill="${c}" stroke="#fffdf6" stroke-width="1.7"/>`;
+    });
+  }
+  return `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" font-family="IBM Plex Sans,sans-serif">
+    ${g}${xl}${line(cumF.m3,'#bd5f2c')}${line(cumF.m2,'#c2912f')}${line(cumF.m1,'#7a3f1d')}${mk}</svg>`;
+}
+
+/* ===================== HIDDEN OWNER ACCESS ===================== */
+let ownerUnlocked=false, clickCount=0, clickTimer=null;
+$('logo').addEventListener('click',()=>{
+  clickCount++;
+  clearTimeout(clickTimer);
+  clickTimer=setTimeout(()=>{clickCount=0;},700);
+  if(clickCount>=3){clickCount=0; openOwner();}
+});
+document.addEventListener('keydown',e=>{
+  if(e.ctrlKey&&e.shiftKey&&(e.key==='K'||e.key==='k')){e.preventDefault();openOwner();}
+});
+function openOwner(){
+  $('ownerOv').classList.add('show');
+  if(ownerUnlocked){ showOwnerPanel(); } else { showPinGate(); }
+}
+function closeOwner(){ $('ownerOv').classList.remove('show'); }
+function showPinGate(){
+  $('modalTitle').textContent='Nastavení — přístup';
+  $('modalHint').textContent='Přístup pouze pro Plachetky CZ.';
+  $('modalAction').textContent='Zavřít';
+  $('modalBody').innerHTML=`
+    <p class="lead">Tato sekce je určena pro obsluhu Plachetky CZ. Zadejte přístupový kód.</p>
+    <div class="pinrow">
+      <input type="password" id="pinInput" inputmode="numeric" placeholder="••••" maxlength="8"
+        onkeydown="if(event.key==='Enter')checkPin()">
+      <button onclick="checkPin()">Odemknout</button>
+    </div>
+    <div class="pinmsg" id="pinMsg"></div>`;
+  setTimeout(()=>{const p=$('pinInput');if(p)p.focus();},60);
+}
+function checkPin(){
+  if($('pinInput').value===OWNER_PIN){ ownerUnlocked=true; showOwnerPanel(); }
+  else { $('pinMsg').textContent='Nesprávný kód.'; $('pinInput').value=''; $('pinInput').focus(); }
+}
+function showOwnerPanel(){
+  $('modalTitle').textContent='Nastavení — Plachetky CZ';
+  $('modalHint').textContent='Změny se ihned promítnou do výpočtu.';
+  $('modalAction').textContent='Hotovo';
+  let html=`
+    <p class="lead">Vložte <b>prezentační kód</b> z konfigurační verze, nebo upravte hodnoty ručně níže.</p>
+    <textarea class="imp-area" id="impArea" placeholder="PLCZ-..."></textarea>
+    <button class="btn-main" onclick="importCode()">Načíst kód</button>
+    <div class="imp-msg" id="impMsg"></div>`;
+  OWNER_FIELDS.forEach(g=>{
+    html+=`<div class="owner-grp"><h4>${g.grp}</h4>`;
+    g.items.forEach(([k,lab,unit])=>{
+      html+=`<div class="of"><label>${lab}</label>
+        <input type="number" step="any" data-ok="${k}" value="${OWNER[k]}">
+        <span class="unit">${unit}</span></div>`;
+    });
+    html+=`</div>`;
+  });
+  html+=`<div class="owner-grp"><h4>Katalog plachetek</h4>
+    <table class="ocat"><thead><tr>
+      <th>Typ</th><th>ks</th><th>Cena</th><th>g</th><th>Život.</th><th>Pečiv</th>
+    </tr></thead><tbody id="ocatBody"></tbody></table></div>`;
+  $('modalBody').innerHTML=html;
+  const cb=$('ocatBody');
+  CAT.forEach((it,i)=>{
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td>${it.name}</td>
+      <td><input type="number" data-ci="${i}" data-ck="count"  value="${it.count}"></td>
+      <td><input type="number" data-ci="${i}" data-ck="price"  value="${it.price}"></td>
+      <td><input type="number" data-ci="${i}" data-ck="weight" value="${it.weight}"></td>
+      <td><input type="number" data-ci="${i}" data-ck="life"   value="${it.life}"></td>
+      <td><input type="number" data-ci="${i}" data-ck="breads" value="${it.breads}"></td>`;
+    cb.appendChild(tr);
+  });
+  $('modalBody').querySelectorAll('input[data-ok]').forEach(inp=>{
+    inp.addEventListener('input',()=>{OWNER[inp.dataset.ok]=parseFloat(inp.value)||0;calc();});
+  });
+  $('modalBody').querySelectorAll('input[data-ci]').forEach(inp=>{
+    inp.addEventListener('input',()=>{CAT[+inp.dataset.ci][inp.dataset.ck]=parseFloat(inp.value)||0;calc();});
+  });
+}
+function importCode(){
+  const raw=$('impArea').value.trim();
+  const msg=$('impMsg');
+  if(!raw){msg.className='imp-msg err';msg.textContent='Vložte kód.';return;}
+  try{
+    const json=decodeURIComponent(escape(atob(raw.replace(/^PLCZ-/,''))));
+    const o=JSON.parse(json);
+    if(!o||!o.p) throw 0;
+    Object.keys(o.p).forEach(k=>{if(k in OWNER)OWNER[k]=o.p[k];});
+    if(Array.isArray(o.c)){
+      o.c.forEach((row,i)=>{
+        if(CAT[i]){CAT[i].count=row[0];CAT[i].price=row[1];CAT[i].weight=row[2];
+                   CAT[i].life=row[3];CAT[i].breads=row[4];}
+      });
+    }
+    msg.className='imp-msg ok';msg.textContent='✓ Nastavení načteno.';
+    showOwnerPanel();
+    $('impMsg').className='imp-msg ok';$('impMsg').textContent='✓ Nastavení načteno.';
+    calc();
+  }catch(e){
+    msg.className='imp-msg err';msg.textContent='Neplatný kód — zkontrolujte, že jste zkopírovali celý text.';
+  }
+}
+
+/* ===================== INIT ===================== */
+buildPanel();
+calc();
+</script>
+</body>
+</html>
